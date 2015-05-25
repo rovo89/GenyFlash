@@ -69,7 +69,13 @@ fi
 
     # Checking zip content
     RESULT=`unzip -l "$ZIPFILE" 2> /dev/null | grep " system/" | wc -l`
-    if [ "$RESULT" -gt 0 ]
+    RESULT_BIN=`unzip -l "$ZIPFILE" 2> /dev/null | grep " META-INF/com/google/android/update-binary" | wc -l`
+    if [ "$RESULT_BIN" -gt 0 ]
+    then
+    # We found an update-binary
+        _log_message "[$PROGNAME] update-binary found in $ZIPFILE; return 0"
+        _exit_success # OK code
+    elif [ "$RESULT" -gt 0]
     then
     # We found a system/ directory
         _log_message "[$PROGNAME] system/ found in $ZIPFILE; return 0"

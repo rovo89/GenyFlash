@@ -12,7 +12,9 @@ RECOVERY_FILE="/data/.genymotion/recovery"
 
 # Value for e_machine field in elf header for ARM
 # http://en.wikipedia.org/wiki/Executable_and_Linkable_Format#File_header
+X86_E_MACHINE="03"
 ARM_E_MACHINE="28"
+ELF_MAGIC="464c457f"
 
 #############
 # FUNCTIONS #
@@ -152,7 +154,39 @@ remount_system_ro() {
     fi
 }
 
+execute_update_binary() {
+    UPDATER=$1
+    ZIPFILE=$2
+    chmod 755 $UPDATER
+    export NO_UIPRINT=1
+    if ! logwrapper $UPDATER 2 1 $ZIPFILE; then
+        exit_on_error "[ERROR][execute_update_binary] execution of update-binary ended with errors"
+    fi
+}
+
 install_all_files() {
+    # Check if the ZIP has an update-binary, and if yes, execute it
+    UPDATER="META-INF/com/google/android/update-binary"
+    UPDATER_ENABLED="META-INF/com/google/android/genymotion-ready"
+    if [ -f $UPDATER -a -f $UPDATER_ENABLED ]; then
+        MAGIC=`hexdump -e '"%02x"' -s 0 -n 4 $UPDATER`
+        SHEBANG=`head -n 1 $UPDATER | grep '^# *!'`
+        if [ "$MAGIC" = $ELF_MAGIC ]; then
+            E_MACHINE=`hexdump -e '"%02x"' -s 18 -n 1 $UPDATER`
+            if [ "$E_MACHINE" = $X86_E_MACHINE ]; then
+                _log_message "[flash_archive] $UPDATER is a x86 binary, executing it"
+                execute_update_binary $UPDATER $ZIPFILE
+                return
+            elif [ "$E_MACHINE" = $ARM_E_MACHINE ]; then
+                exit_on_error "[ERROR][flash_archive] $UPDATER is an ARM binary (not supported yet)"
+            fi
+        elif [ "$SHEBANG" ]; then
+            _log_message "[flash_archive] $UPDATER is a shell script, executing it"
+            execute_update_binary $UPDATER $ZIPFILE
+            return
+        fi
+    fi
+
     for i in $(find system/) ;
     do
         check_and_install_file "$i"
