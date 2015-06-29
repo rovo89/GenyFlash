@@ -34,6 +34,9 @@ applied only to archives that contain a file called
 Simply start the virtual device and execute [install.bat](install.bat).
 If you want to return to the old behavior, you can execute [uninstall.bat](uninstall.bat).
 
+On Linux, change into the directory of this repository and execute [install.sh](install.sh)
+ / [uninstall.sh](uninstall.sh).
+
 ## Traps
 The file `update-binary` can be any executable file. Most Android devices are running
 with an ARM processor, but Genymotion runs on x86. So there's a good chance that the

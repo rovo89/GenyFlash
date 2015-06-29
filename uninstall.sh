@@ -9,4 +9,3 @@ adb -e push original/system/bin/flash-archive.sh /system/bin
 adb -e shell chmod 755 /system/bin/flash-archive.sh
 
 echo Done!
-
