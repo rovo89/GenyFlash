@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo Installing improved scripts...
+echo Installing original scripts...
 adb -e remount
 adb -e wait-for-device
 adb -e push original/system/bin/check-archive.sh /system/bin
